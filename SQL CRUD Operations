@@ -1,0 +1,119 @@
+
+PROGRAM NO: 04 :SQL CRUD Operations	 
+SOURCE CODE: INDEX.PHP
+<?php include 'db.php';
+
+// CREATE logic
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+$name = $_POST["name"];
+$email = $_POST["email"];
+$conn->query("INSERT INTO users (name, email) VALUES ('$name', '$email')"); header("Location: index.php");
+}
+$users = $conn->query("SELECT * FROM users");
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CRUD with PHP & Tailwind</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+<div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+<h2 class="text-2xl font-bold mb-4">Add User</h2>
+<form method="POST" class="space-y-4">
+<input name="name" placeholder="Name" class="w-full p-2 border rounded" required>
+<input name="email" placeholder="Email" class="w-full p-2 border rounded" required>
+<button class="bg-blue-500 text-white px-4 py-2 rounded">Submit</button>
+</form>
+</div>
+
+<div class="max-w-2xl mx-auto mt-8 bg-white p-6 rounded shadow">
+<h2 class="text-xl font-bold mb-4">User List</h2>
+<table class="w-full text-left">
+<thead>
+<tr>
+<th class="border-b p-2">#</th>
+<th class="border-b p-2">Name</th>
+<th class="border-b p-2">Email</th>
+<th class="border-b p-2">Actions</th>
+</tr>
+</thead>
+<tbody>
+<?php while ($row = $users->fetch_assoc()): ?>
+<tr>
+<td class="border-b p-2"><?= $row['id'] ?></td>
+<td class="border-b p-2"><?= $row['name'] ?></td>
+ 
+<td class="border-b p-2"><?= $row['email'] ?></td>
+<td class="border-b p-2 space-x-2">
+<a href="edit.php?id=<?= $row['id'] ?>" class="text-blue-600">Edit</a>
+<a href="delete.php?id=<?= $row['id'] ?>" onclick="return confirm('Delete this user?')" class="text-red-600">Delete</a>
+</td>
+</tr>
+<?php endwhile; ?>
+</tbody>
+</table>
+</div>
+</body>
+</html>
+
+CREATE DATABASE crud_app; USE crud_app;
+
+CREATE TABLE users (
+id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL,
+email VARCHAR(100) NOT NULL
+);
+
+DB.PHP
+
+<?php
+$conn = new mysqli("localhost", "root", "", "crud_db"); if ($conn->connect_error) {
+die("Connection failed: " . $conn->connect_error);
+}
+?>
+
+EDIT.PHP
+
+<?php
+include 'db.php';
+$id = $_GET['id'];
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+$name = $_POST["name"];
+$email = $_POST["email"];
+$conn->query("UPDATE users SET name='$name', email='$email' WHERE id=$id"); header("Location: index.php");
+}
+
+$result = $conn->query("SELECT * FROM users WHERE id=$id");
+$user = $result->fetch_assoc();
+?>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edit User</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+<div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+<h2 class="text-2xl font-bold mb-4">Edit User</h2>
+<form method="POST" class="space-y-4">
+<input name="name" value="<?= $user['name'] ?>" class="w-full p-2 border rounded" required>
+<input name="email" value="<?= $user['email'] ?>" class="w-full p-2 border rounded" required>
+<button class="bg-green-500 text-white px-4 py-2 rounded">Update</button>
+<a href="index.php" class="ml-4 text-blue-600">Cancel</a>
+</form>
+</div>
+</body>
+</html>
+
+DELETE.PHP
+
+<?php
+include 'db.php';
+$id = $_GET['id'];
+$conn->query("DELETE FROM users WHERE id=$id"); header("Location: index.php");
+?>
