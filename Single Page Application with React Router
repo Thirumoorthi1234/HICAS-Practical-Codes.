@@ -1,0 +1,184 @@
+
+PROGRAM NO: 06 :	Single Page Application with React Router	
+
+SORCE CODE:
+
+App.jsx:
+import React, { useState } from "react"; import "./App.css";
+
+function App() {
+const [task, setTask] = useState(""); const [tasks, setTasks] = useState([]); const [editId, setEditId] = useState(null);
+
+// Add or Update Task const handleTask = () => {
+if (task.trim() === "") return;
+
+
+if (editId) {
+setTasks(tasks.map((t) => (t.id === editId ? { ...t, text: task } : t))); setEditId(null);
+setTask("");
+} else {
+setTasks([...tasks, { text: task, id: Date.now(), done: false }]); setTask("");
+}
+};
+
+
+// Delete Task
+const deleteTask = (id) => {
+// Add 'removing' class for CSS animation
+const element = document.getElementById(`task-${id}`); element.classList.add("remove");
+setTimeout(() => { setTasks(tasks.filter((t) => t.id !== id));
+}, 300); // match with CSS animation duration
+ 
+};
+
+
+// Edit Task
+const editTask = (id) => {
+const taskToEdit = tasks.find((t) => t.id === id); setTask(taskToEdit.text);
+setEditId(id);
+};
+
+
+// Toggle Completed
+const toggleDone = (id) => { setTasks(
+tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+);
+};
+
+
+return (
+<div className="container">
+<div className="todo-card">
+<h1>✨ To-Do List ✨</h1>
+
+
+<input type="text" value={task}
+onChange={(e) => setTask(e.target.value)} placeholder="Enter a task..."
+/>
+
+
+<button onClick={handleTask}>{editId ? "Update" : "Add"}</button>
+
+
+<ul>
+{tasks.map((t) => (
+ 
+<li
+key={t.id} id={`task-${t.id}`}
+className={`task-item ${t.done ? "done" : ""} add`}
+>
+<span onClick={() => toggleDone(t.id)}>{t.text}</span>
+<div className="buttons">
+<button className="edit-btn" onClick={() => editTask(t.id)}> Edit
+</button>
+<button className="delete-btn" onClick={() => deleteTask(t.id)}> Delete
+</button>
+</div>
+</li>
+))}
+</ul>
+</div>
+</div>
+);
+}
+
+
+export default App; App.css:
+/* General page */ body, html { margin: 0;
+padding: 0;
+font-family: 'Arial', sans-serif;
+background: linear-gradient(to right, #7b2ff7, #f107a3); min-height: 100vh;
+display: flex;
+ 
+justify-content: center; align-items: center;
+}
+
+
+/* Container for To-Do */
+.container { width: 100%;
+max-width: 500px; padding: 20px;
+}
+
+
+/* Card style */
+.todo-card {
+background-color: #fff; border-radius: 20px; padding: 30px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+
+/* Heading */
+.todo-card h1 { text-align: center; font-size: 2.5rem;
+background: linear-gradient(to right, #7b2ff7, #f107a3);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent; margin-bottom: 20px;
+}
+
+
+/* Input */
+.todo-card input { width: 100%;
+ 
+padding: 12px; border-radius: 10px;
+border: 2px solid #ddd; margin-bottom: 10px; font-size: 1rem;
+}
+
+
+/* Add / Update Button */
+.todo-card button { width: 100%; padding: 12px;
+background: linear-gradient(to right, #7b2ff7, #f107a3); color: #fff;
+border: none; border-radius: 10px; font-size: 1rem; cursor: pointer;
+margin-bottom: 20px; transition: opacity 0.3s ease;
+}
+.todo-card button:hover { opacity: 0.8;
+}
+
+
+/* Task List */
+.todo-card ul { list-style: none; padding: 0;
+}
+
+
+/* Task Item */
+.task-item {
+ 
+background: #f7f7f7; padding: 12px; margin-bottom: 10px; border-radius: 10px; display: flex;
+justify-content: space-between; align-items: center;
+transition: transform 0.3s ease, opacity 0.3s ease; animation: fadeIn 0.3s ease forwards;
+cursor: pointer;
+}
+
+
+.task-item.done span {
+text-decoration: line-through; color: gray;
+}
+
+
+/* Fade-in animation */ @keyframes fadeIn {
+from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);}
+}
+
+
+/* Remove animation */
+.task-item.remove {
+animation: fadeOut 0.3s ease forwards;
+}
+
+
+@keyframes fadeOut {
+from {opacity: 1; transform: translateX(0);} to {opacity: 0; transform: translateX(50px);}
+}
+ 
+/* Buttons inside task */
+.buttons button { padding: 6px 12px; margin-left: 5px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;
+transition: opacity 0.3s ease;
+}
+.edit-btn {
+background-color: #3498db; color: #fff;
+}
+.edit-btn:hover { opacity: 0.8;
+}
+.delete-btn {
+background-color: #e74c3c; color: #fff;
+}
+.delete-btn:hover { opacity: 0.8;
+}
