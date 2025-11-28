@@ -1,0 +1,295 @@
+
+PROGRAM NO: 10 : Connect React Frontend with Express API	
+ 
+SOURCE CODE
+
+Booklist.js:
+import React, { useEffect, useState } from "react"; import axios from "axios";
+import "../App.css"; // ✅ Correct import
+
+
+const API_URL = "http://localhost:3000/api/books";
+
+
+function BookList() {
+const [books, setBooks] = useState([]);
+const [form, setForm] = useState({ title: "", author: "", year: "" }); const [editingBook, setEditingBook] = useState(null);
+const [animateId, setAnimateId] = useState(null);
+
+
+useEffect(() => { fetchBooks();
+}, []);
+
+
+const fetchBooks = async () => { try {
+const res = await axios.get(API_URL); setBooks(res.data);
+} catch (err) { console.error(err);
+}
+};
+
+
+const handleSubmit = async (e) => { e.preventDefault();
+try {
+const bookData = { ...form, year: Number(form.year) }; let updatedBook;
+ 
+if (editingBook) {
+updatedBook = await axios.put(`${API_URL}/${editingBook._id}`, bookData); setEditingBook(null);
+} else {
+updatedBook = await axios.post(API_URL, bookData);
+updatedBook = { data: { ...bookData, _id: Math.random().toString(36) } }; // temp ID for animation
+}
+
+
+setAnimateId(updatedBook.data._id); setForm({ title: "", author: "", year: "" }); fetchBooks();
+} catch (err) { console.error(err);
+}
+};
+
+
+const handleDelete = async (id) => { try {
+await axios.delete(`${API_URL}/${id}`); fetchBooks();
+} catch (err) { console.error(err);
+}
+};
+
+
+const handleEdit = (book) => { setEditingBook(book);
+setForm({ title: book.title, author: book.author, year: book.year });
+};
+
+
+return (
+ 
+<div className="container">
+<h1>Movie Manager</h1>
+
+
+<form onSubmit={handleSubmit} className="form">
+<input type="text"
+placeholder="Title" value={form.title}
+onChange={(e) => setForm({ ...form, title: e.target.value })} required
+/>
+<input type="text"
+placeholder="Director" value={form.author}
+onChange={(e) => setForm({ ...form, author: e.target.value })} required
+/>
+<input type="number" placeholder="Year" value={form.year}
+onChange={(e) => setForm({ ...form, year: e.target.value })} required
+/>
+<button type="submit">{editingBook ? "Update Movie" : "Add Movie"}</button>
+</form>
+
+
+<ul className="book-list">
+{books.map((book) => (
+<li
+key={book._id}
+ 
+className={`book-item ${animateId === book._id ? "animate-pop" : ""}`}
+>
+<b>{book.title}</b> by {book.author} ({book.year})
+<div className="actions">
+<button onClick={() => handleEdit(book)}>Edit</button>
+<button onClick={() => handleDelete(book._id)}>Delete</button>
+</div>
+</li>
+))}
+</ul>
+</div>
+);
+}
+
+
+export default BookList;
+
+
+App.js:
+import React from "react";
+import BookList from "./components/BookList"; import "./index.css";
+function App() { return (
+<div>
+<BookList />
+</div>
+);
+}
+
+
+export default App;
+
+
+App.css:
+/*
+ 
+Global & Body
+*/
+/*
+Global & Body
+*/
+body, html, #root { margin: 0;
+padding: 0;
+height: 100%;
+font-family: 'Segoe UI', sans-serif;
+/* Professional 2-color gradient background */ background: linear-gradient(135deg, #2f3640, #fbc531); display: flex;
+justify-content: center; /* horizontal center */ align-items: center;	/* vertical center */ color: #333;
+}
+
+
+/*
+Container
+*/
+.container { width: 100%;
+max-width: 700px; padding: 20px; display: flex;
+flex-direction: column;
+align-items: center; /* center form and list */
+}
+
+
+/*
+Page Title
+ 
+*/
+h1 {
+text-align: center;
+color: #2f3640; /* dark text */ font-size: 2.8rem;
+margin-bottom: 25px;
+}
+
+
+/*
+Form Styles
+*/
+form {
+background: white; padding: 25px; border-radius: 15px;
+box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: flex;
+flex-direction: column; gap: 12px;
+width: 100%;
+max-width: 500px;
+transition: transform 0.3s ease;
+}
+form:hover { transform: scale(1.01);
+}
+
+
+form input {
+padding: 10px 14px; border: 1px solid #ccc; border-radius: 10px; font-size: 1rem;
+ 
+transition: border 0.3s, box-shadow 0.3s;
+}
+form input:focus { outline: none;
+border-color: #2f3640;
+box-shadow: 0 0 5px rgba(47,54,64,0.3);
+}
+
+
+form button { padding: 12px; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; color: white;
+background-color: #2f3640; cursor: pointer;
+transition: background 0.3s, transform 0.3s;
+}
+form button:hover { background-color: #353b48; transform: scale(1.03);
+}
+
+
+/*
+Book List
+*/
+.book-list {
+margin-top: 25px; width: 100%; display: flex;
+flex-direction: column;
+ 
+gap: 12px;
+align-items: center; /* center all book cards */
+}
+
+
+.book-item { background: white; padding: 18px 20px; border-radius: 15px;
+box-shadow: 0 6px 18px rgba(0,0,0,0.08); display: flex;
+justify-content: space-between; align-items: center;
+transition: transform 0.3s ease, box-shadow 0.3s ease; width: 100%;
+max-width: 500px;
+}
+.book-item:hover { transform: scale(1.01);
+box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+
+.book-item b { font-size: 1.1rem; color: #2f3640;
+}
+
+
+/*
+Actions Buttons
+*/
+.actions { display: flex; gap: 10px;
+ 
+}
+
+
+.actions button { padding: 6px 12px; border: none; border-radius: 10px; cursor: pointer;
+font-weight: bold; font-size: 0.9rem;
+transition: transform 0.2s, background 0.3s;
+}
+
+
+.actions button:hover { transform: scale(1.05);
+}
+
+
+/* Edit button */
+.actions button:first-child { background-color: #fbc531; color: #2f3640;
+}
+.actions button:first-child:hover { background-color: #e1b12c;
+}
+
+
+/* Delete button */
+.actions button:last-child { background-color: #e84118; color: white;
+}
+.actions button:last-child:hover { background-color: #c23616;
+ 
+}
+
+
+/*
+Animation for new/updated books
+*/
+@keyframes pop {
+0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); }
+}
+
+
+.animate-pop {
+animation: pop 0.3s ease-in-out;
+}
+
+
+/*
+Responsive Design
+*/
+/* Mobile (up to 480px) */
+@media (max-width: 480px) { h1 {
+font-size: 2rem;
+}
+form, .book-item { width: 90%;
+}
+.actions {
+flex-wrap: wrap;
+justify-content: flex-start;
+}
+}
+ 
+/* Tablet (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) { h1 {
+font-size: 2.3rem;
+}
+form, .book-item { width: 80%;
+}
+}
+
+
+/* Laptops & Desktops (769px and up) */ @media (min-width: 769px) {
+h1 {
+font-size: 2.8rem;
+}
+form, .book-item { width: 100%;
+}
+}
