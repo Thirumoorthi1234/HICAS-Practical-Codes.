@@ -1,0 +1,70 @@
+
+PROGRAM NO: 11 : Dockerize Full Stack App	
+ 
+SOURCE CODE:
+
+Dockerfile for backend: FROM node:20-alpine
+
+WORKDIR /app
+
+
+COPY package*.json ./
+
+
+RUN npm install
+
+
+COPY . .
+
+
+EXPOSE 3000
+
+
+CMD ["npm", "start"]
+
+
+Dockerfile for front end: FROM node:20-alpine
+
+WORKDIR /app
+
+
+COPY package*.json ./
+
+
+RUN npm install
+
+
+COPY . .
+
+
+EXPOSE 5173
+
+
+CMD ["npm", "run", "dev"]
+
+
+Docker-compose.yml:
+ 
+services:
+frontend:
+build: ./frontend ports:
+- "5173:5173"
+depends_on:
+-	backend environment:
+-	VITE_API_URL=http://localhost:3000
+
+
+backend:
+build: ./backend ports:
+- "3000:3000"
+depends_on:
+-	mongo environment:
+-	MONGO_URI=mongodb://mongo:27017/booksdb
+
+
+mongo:
+image: mongo restart: always ports:
+- "27017:27017"
+
+
+.Dockerignore: 
